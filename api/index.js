@@ -18,10 +18,11 @@ mongoose
 const __dirname = path.resolve();
 const app = express();
 app.use(cors({
-        origin: "https://estate-ease-1-l3ba.onrender.com"
+        origin: ["https://estate-ease-1-l3ba.onrender.com","http://localhost:5173"] ,
+        credentials: true,
     }
 ))
-app.options('*', cors())
+//app.options('*', cors())
 
 app.use(express.json());
 app.use(cookieParser());
