@@ -1,37 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice';
 import OAuth from '../components/OAuth';
 
 export default function SignIn() {
-  const [formData, setFormData] = useState({});
-  const { loading, error } = useSelector((state) => state.user);
-  const navigate = useNavigate();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { loading, error } = useSelector((state) => state.user);
+
+  const [formData, setFormData] = useState({ email: '', password: '' });
+
+  useEffect(() => {
+    dispatch(signInFailure(null)); // reset loading & error on mount
+  }, [dispatch]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.id]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      dispatch(signInStart());
+    dispatch(signInStart());
 
+    try {
       const res = await fetch('https://estate-ease-1-l3ba.onrender.com/api/auth/signin', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
       const data = await res.json();
-      console.log(data);
 
       if (data.success === false) {
         dispatch(signInFailure(data.message));
@@ -52,19 +51,22 @@ export default function SignIn() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="email"
-          placeholder="email"
-          className="border p-3 rounded-lg"
           id="email"
+          placeholder="Email"
+          className="border p-3 rounded-lg"
+          value={formData.email}
           onChange={handleChange}
         />
         <input
           type="password"
-          placeholder="password"
-          className="border p-3 rounded-lg"
           id="password"
+          placeholder="Password"
+          className="border p-3 rounded-lg"
+          value={formData.password}
           onChange={handleChange}
         />
         <button
+          type="submit"
           disabled={loading}
           className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
         >
@@ -75,8 +77,8 @@ export default function SignIn() {
 
       <div className="flex gap-2 mt-5">
         <p>Don't have an account?</p>
-        <Link to={'/sign-up'}>
-          <span className="text-blue-700">Sign up</span>
+        <Link to="/sign-up">
+          <span className="text-blue-700">Sign Up</span>
         </Link>
       </div>
 
