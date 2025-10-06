@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 export default function CreateListing() {
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
-
   const [files, setFiles] = useState([]);
   const [formData, setFormData] = useState({
     imageUrls: [],
@@ -23,11 +22,12 @@ export default function CreateListing() {
     parking: false,
     furnished: false,
   });
+  const [imageUploadError, setImageUploadError] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  if (!currentUser) {
+  if (!currentUser || !currentUser.token) {
     return (
       <p className="text-center mt-10 text-red-600">
         You must be logged in to create a listing.
@@ -36,12 +36,14 @@ export default function CreateListing() {
   }
 
   const handleChange = (e) => {
-    const { id, type, checked, value } = e.target;
-
-    if (['sale', 'rent'].includes(id)) setFormData({ ...formData, type: id });
-    else if (['parking', 'furnished', 'offer'].includes(id))
+    const { id, type, value, checked } = e.target;
+    if (['sale', 'rent'].includes(id)) {
+      setFormData({ ...formData, type: id });
+    } else if (['parking', 'furnished', 'offer'].includes(id)) {
       setFormData({ ...formData, [id]: checked });
-    else setFormData({ ...formData, [id]: value });
+    } else if (['text', 'number', 'textarea'].includes(type)) {
+      setFormData({ ...formData, [id]: value });
+    }
   };
 
   const storeImage = (file) =>
@@ -63,28 +65,35 @@ export default function CreateListing() {
     });
 
   const handleImageSubmit = () => {
-    if (files.length > 0 && files.length + formData.imageUrls.length <= 6) {
-      setUploading(true);
-      const promises = Array.from(files).map((file) => storeImage(file));
-      Promise.all(promises)
-        .then((urls) => {
-          setFormData({ ...formData, imageUrls: formData.imageUrls.concat(urls) });
-          setUploading(false);
-        })
-        .catch(() => setUploading(false));
+    if (files.length === 0 || files.length + formData.imageUrls.length > 6) {
+      setImageUploadError('You can upload up to 6 images.');
+      return;
     }
+    setUploading(true);
+    Promise.all(Array.from(files).map(storeImage))
+      .then((urls) => {
+        setFormData({ ...formData, imageUrls: [...formData.imageUrls, ...urls] });
+        setUploading(false);
+        setImageUploadError(false);
+      })
+      .catch(() => {
+        setUploading(false);
+        setImageUploadError('Failed to upload images (max 2MB each).');
+      });
   };
 
   const handleRemoveImage = (index) => {
-    setFormData({ ...formData, imageUrls: formData.imageUrls.filter((_, i) => i !== index) });
+    setFormData({
+      ...formData,
+      imageUrls: formData.imageUrls.filter((_, i) => i !== index),
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (formData.imageUrls.length < 1) return setError('Upload at least one image');
-    if (+formData.regularPrice < +formData.discountPrice)
-      return setError('Discount price must be lower than regular price');
+    if (formData.imageUrls.length < 1) return setError('Upload at least one image.');
+    if (+formData.discountPrice > +formData.regularPrice)
+      return setError('Discount price must be lower than regular price.');
 
     setLoading(true);
     setError(false);
@@ -94,7 +103,7 @@ export default function CreateListing() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${currentUser.token}`, // Include token
+          Authorization: `Bearer ${currentUser.token}`, // Token added
         },
         body: JSON.stringify({ ...formData, userRef: currentUser._id }),
       });
@@ -102,7 +111,7 @@ export default function CreateListing() {
       const data = await res.json();
       setLoading(false);
 
-      if (data.success === false) return setError(data.message);
+      if (!data.success) return setError(data.message || 'Failed to create listing');
 
       navigate(`/listing/${data._id}`);
     } catch (err) {
@@ -114,96 +123,29 @@ export default function CreateListing() {
   return (
     <main className="p-3 max-w-4xl mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Create a Listing</h1>
-
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
-        {/* Left side */}
+        {/* Left side: listing info */}
         <div className="flex flex-col gap-4 flex-1">
           <input
             type="text"
             id="name"
             placeholder="Name"
-            className="border p-3 rounded-lg"
             minLength={10}
             maxLength={62}
             required
             value={formData.name}
             onChange={handleChange}
+            className="border p-3 rounded-lg"
           />
           <textarea
             id="description"
             placeholder="Description"
-            className="border p-3 rounded-lg"
             required
             value={formData.description}
             onChange={handleChange}
+            className="border p-3 rounded-lg"
           />
           <input
             type="text"
             id="address"
             placeholder="Address"
-            className="border p-3 rounded-lg"
-            required
-            value={formData.address}
-            onChange={handleChange}
-          />
-          <div className="flex gap-6 flex-wrap">
-            {['sale', 'rent', 'parking', 'furnished', 'offer'].map((item) => (
-              <div key={item} className="flex gap-2">
-                <input
-                  type="checkbox"
-                  id={item}
-                  className="w-5"
-                  onChange={handleChange}
-                  checked={item === 'sale' || item === 'rent' ? formData.type === item : formData[item]}
-                />
-                <span>{item.charAt(0).toUpperCase() + item.slice(1)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Right side: Images */}
-        <div className="flex flex-col flex-1 gap-4">
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={(e) => setFiles(e.target.files)}
-            className="p-3 border border-gray-300 rounded w-full"
-          />
-          <button
-            type="button"
-            disabled={uploading}
-            onClick={handleImageSubmit}
-            className="p-3 text-green-700 border border-green-700 rounded uppercase hover:shadow-lg disabled:opacity-80"
-          >
-            {uploading ? 'Uploading...' : 'Upload'}
-          </button>
-
-          {formData.imageUrls.map((url, i) => (
-            <div key={i} className="flex justify-between p-3 border items-center">
-              <img src={url} alt="listing" className="w-20 h-20 object-contain rounded-lg" />
-              <button
-                type="button"
-                onClick={() => handleRemoveImage(i)}
-                className="p-3 text-red-700 rounded-lg uppercase hover:opacity-75"
-              >
-                Delete
-              </button>
-            </div>
-          ))}
-
-          <button
-            type="submit"
-            disabled={loading || uploading}
-            className="p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
-          >
-            {loading ? 'Creating...' : 'Create listing'}
-          </button>
-
-          {error && <p className="text-red-700 text-sm">{error}</p>}
-        </div>
-      </form>
-    </main>
-  );
-}

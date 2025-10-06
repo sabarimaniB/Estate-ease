@@ -12,8 +12,7 @@ export default function SignIn() {
   const [formData, setFormData] = useState({ email: '', password: '' });
 
   useEffect(() => {
-    // Reset error on mount
-    dispatch(signInFailure(null));
+    dispatch(signInFailure(null)); // Reset previous error
   }, [dispatch]);
 
   const handleChange = (e) => {
@@ -32,24 +31,25 @@ export default function SignIn() {
       });
 
       const data = await res.json();
-      console.log('Sign-in response:', data);
+      console.log('Server response:', data);
 
-      // Safety check
       if (!data.success || !data.user || !data.token) {
-        dispatch(signInFailure(data.message || "Invalid response from server"));
+        dispatch(signInFailure(data.message || 'Invalid server response'));
         return;
       }
 
-      // Dispatch success with safe data
-      dispatch(signInSuccess({
-        _id: data.user._id,
-        email: data.user.email,
-        token: data.token
-      }));
+      // Dispatch user info with token
+      dispatch(
+        signInSuccess({
+          _id: data.user._id,
+          email: data.user.email,
+          token: data.token,
+        })
+      );
 
       navigate('/');
     } catch (err) {
-      dispatch(signInFailure(err.message || "Something went wrong"));
+      dispatch(signInFailure(err.message));
     }
   };
 
