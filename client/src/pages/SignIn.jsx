@@ -19,8 +19,9 @@ export default function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    dispatch(signInStart());
+
     try {
-      dispatch(signInStart());
       const res = await fetch('https://estate-ease-1-l3ba.onrender.com/api/auth/signin', {
         method: 'POST',
         headers: {
@@ -28,9 +29,10 @@ export default function SignIn() {
         },
         body: JSON.stringify(formData),
       });
+
       const data = await res.json();
 
-      if (data.success === false) {
+      if (!data.success) {
         dispatch(signInFailure(data.message));
         return;
       }
@@ -38,7 +40,6 @@ export default function SignIn() {
       dispatch(signInSuccess(data));
       navigate('/');
     } catch (err) {
-      console.error(err);
       dispatch(signInFailure(err.message));
     }
   };
@@ -76,7 +77,7 @@ export default function SignIn() {
       </form>
 
       <div className="flex gap-2 mt-5">
-        <p>Dont have an account?</p>
+        <p>Don't have an account?</p>
         <Link to="/sign-up">
           <span className="text-blue-700">Sign Up</span>
         </Link>
