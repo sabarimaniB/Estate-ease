@@ -36,8 +36,6 @@ export default function CreateListing() {
     if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
       setUploading(true);
       setImageUploadError(false);
-      console.log(e);
-      
       const promises = [];
 
       for (let i = 0; i < files.length; i++) {
@@ -53,7 +51,7 @@ export default function CreateListing() {
           setUploading(false);
         })
         .catch((err) => {
-          setImageUploadError('Image upload failed (2 mb max per image)',err);
+          setImageUploadError('Image upload failed (2 mb max per image)');
           setUploading(false);
         });
     } else {
@@ -132,38 +130,29 @@ export default function CreateListing() {
         return setError('You must upload at least one image');
       if (+formData.regularPrice < +formData.discountPrice)
         return setError('Discount price must be lower than regular price');
-  
       setLoading(true);
       setError(false);
-  
-      const res = await fetch(
-        'https://estate-ease-1-l3ba.onrender.com/api/listing/create',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            // If using JWT auth, add:
-            // 'Authorization': `Bearer ${currentUser.token}`
-          },
-          credentials: 'include', // 👈 required if using cookies for auth
-          body: JSON.stringify({ ...formData, userRef: currentUser._id }),
-        }
-      );
-  
+      const res = await fetch('https://estate-ease-1-l3ba.onrender.com/api/listing/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          userRef: currentUser._id,
+        }),
+      });
       const data = await res.json();
       setLoading(false);
-  
-      if (!res.ok) {
-        return setError(data.message || 'Failed to create listing');
+      if (data.success === false) {
+        setError(data.message);
       }
-  
       navigate(`/listing/${data._id}`);
-    } catch (err) {
-      setError(err.message || 'Something went wrong');
+    } catch (error) {
+      setError(error.message);
       setLoading(false);
     }
   };
-  
   return (
     <main className='p-3 max-w-4xl mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>
