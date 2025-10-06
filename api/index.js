@@ -39,6 +39,9 @@ app.use('/api/listing', listingRouter);
 
 // ✅ Serve frontend (for production)
 app.use(express.static(path.join(__dirname, '/client/dist')));
+app.get("/", (req, res) => {
+  res.send("Backend working fine!");
+});
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
 });
