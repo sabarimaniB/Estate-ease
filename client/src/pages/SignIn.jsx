@@ -12,7 +12,8 @@ export default function SignIn() {
   const [formData, setFormData] = useState({ email: '', password: '' });
 
   useEffect(() => {
-    dispatch(signInFailure(null)); // reset error on mount
+    // Reset error on mount
+    dispatch(signInFailure(null));
   }, [dispatch]);
 
   const handleChange = (e) => {
@@ -31,13 +32,15 @@ export default function SignIn() {
       });
 
       const data = await res.json();
+      console.log('Sign-in response:', data);
 
-      if (data.success === false) {
-        dispatch(signInFailure(data.message));
+      // Safety check
+      if (!data.success || !data.user || !data.token) {
+        dispatch(signInFailure(data.message || "Invalid response from server"));
         return;
       }
 
-      // Save token and user info in Redux
+      // Dispatch success with safe data
       dispatch(signInSuccess({
         _id: data.user._id,
         email: data.user.email,
@@ -46,7 +49,7 @@ export default function SignIn() {
 
       navigate('/');
     } catch (err) {
-      dispatch(signInFailure(err.message));
+      dispatch(signInFailure(err.message || "Something went wrong"));
     }
   };
 
