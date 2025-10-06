@@ -29,7 +29,7 @@ app.use('/api/user', userRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/listing', listingRouter);
 
-// ✅ Serve frontend (for production)
+
 app.use(express.static(path.join(__dirname, '/client/dist')));
 app.get("/", (req, res) => {
   res.send("Backend working fine!");
