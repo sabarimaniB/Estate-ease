@@ -12,7 +12,7 @@ export default function SignIn() {
   const [formData, setFormData] = useState({ email: '', password: '' });
 
   useEffect(() => {
-    dispatch(signInFailure(null)); // reset loading & error on mount
+    dispatch(signInFailure(null)); // reset error on mount
   }, [dispatch]);
 
   const handleChange = (e) => {
@@ -37,17 +37,8 @@ export default function SignIn() {
         return;
       }
 
-      // Save user data including token in Redux
-      dispatch(
-        signInSuccess({
-          _id: data.user._id,
-          email: data.user.email,
-          token: data.token, // ✅ important for auth requests
-        })
-      );
-
-      // Optionally save in localStorage to persist login
-      localStorage.setItem('currentUser', JSON.stringify({
+      // Save token and user info in Redux
+      dispatch(signInSuccess({
         _id: data.user._id,
         email: data.user.email,
         token: data.token
