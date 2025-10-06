@@ -14,7 +14,7 @@ export default function OAuth() {
 
       const result = await signInWithPopup(auth, provider);
 
-      const res = await fetch('https://estate-ease-psi.vercel.app/api/auth/google', {
+      const res = await fetch('https://estate-ease-1-l3ba.onrender.com/api/auth/google', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
