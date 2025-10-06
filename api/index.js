@@ -20,21 +20,10 @@ const app = express();
 
 // ✅ 1️⃣ Apply CORS before anything else
 app.use(cors({
-  origin: [
-    "https://estate-ease-1-l3ba.onrender.com",  // deployed frontend
-    "http://localhost:5173"                     // local dev
-  ],
+  origin: [],
   credentials: true,
 }));
 
-// ✅ Handle preflight requests
-app.options('*', cors({
-  origin: [
-    "https://estate-ease-1-l3ba.onrender.com",
-    "http://localhost:5173"
-  ],
-  credentials: true,
-}));
 
 // ✅ 2️⃣ Parse JSON + cookies
 app.use(express.json());
