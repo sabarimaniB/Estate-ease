@@ -19,10 +19,26 @@ const __dirname = path.resolve();
 const app = express();
 
 // ✅ 1️⃣ Apply CORS before anything else
-app.use(cors({
-  origin: '',
-  credentials: true,
-}));
+// app.use(cors({
+//   origin: '',
+//   credentials: true,
+// }));
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204); // 🧠 handle preflight instantly
+  }
+  
+  next();
+});
 
 
 // ✅ 2️⃣ Parse JSON + cookies
