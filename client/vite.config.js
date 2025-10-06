@@ -12,7 +12,7 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'https://estate-ease-1-l3ba.onrender.com',
         secure: false,
         changeOrigin: true,
       },

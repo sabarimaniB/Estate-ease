@@ -16,6 +16,7 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      console.log(formData);
       setLoading(true);
       const res = await fetch('https://estate-ease-1-l3ba.onrender.com/api/auth/signup', {
         method: 'POST',
