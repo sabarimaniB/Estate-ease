@@ -21,10 +21,9 @@ const app = express();
 // ✅ CORS configuration for both local & deployed frontends
 app.use(
   cors({
-    origin: [
-      'http://localhost:5173', // local frontend
-      'https://estate-ease-5ytq.vercel.app' // deployed frontend
-    ],
+    origin: ["https://estate-ease-5ytq.vercel.app"], // your frontend domain
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
