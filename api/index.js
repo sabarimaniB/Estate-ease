@@ -22,6 +22,7 @@ const app = express();
 const allowedOrigins = [
   "https://estate-ease-1-l3ba.onrender.com",
   "http://localhost:5173",
+  "https://estate-ease-front.onrender.com"
 ];
 
 // ✅ Step 2: plug in cors() globally
