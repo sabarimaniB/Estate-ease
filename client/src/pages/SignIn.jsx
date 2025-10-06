@@ -37,7 +37,22 @@ export default function SignIn() {
         return;
       }
 
-      dispatch(signInSuccess(data));
+      // Save user data including token in Redux
+      dispatch(
+        signInSuccess({
+          _id: data.user._id,
+          email: data.user.email,
+          token: data.token, // ✅ important for auth requests
+        })
+      );
+
+      // Optionally save in localStorage to persist login
+      localStorage.setItem('currentUser', JSON.stringify({
+        _id: data.user._id,
+        email: data.user.email,
+        token: data.token
+      }));
+
       navigate('/');
     } catch (err) {
       dispatch(signInFailure(err.message));
